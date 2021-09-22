@@ -14,8 +14,6 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123qwe
-      POSTGRES_DB: umis1
-      PGDATA: /data/postgres
     volumes:
        - postgres:/data/postgres
     ports:
@@ -40,6 +38,7 @@ services:
 
 networks:
   bookstore-network:
+    external: true
 
 volumes:
     postgres:
