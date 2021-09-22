@@ -1,0 +1,29 @@
+version: '3.4'
+
+services:
+  acme.bookstore.identityserver:
+    image: ${DOCKER_REGISTRY-}acme.bookstore-identityserver
+    build:
+      context: ../.
+      dockerfile: src/Acme.BookStore.IdentityServer/Dockerfile
+
+  acme.bookstore.dbmigrator:
+    image: ${DOCKER_REGISTRY-}acme.bookstore-dbmigrator
+    build:
+      context: ../.
+      dockerfile: src/Acme.BookStore.DbMigrator/Dockerfile
+
+
+  acme.bookstore.web:
+    image: ${DOCKER_REGISTRY-}acme.bookstoreweb
+    build:
+      context: ../.
+      dockerfile: src/Acme.BookStore.Web/Dockerfile
+
+
+  acme.bookstore.httpapi:
+    image: ${DOCKER_REGISTRY-}acme.bookstore-httpapi
+    build:
+      context: ../.
+      dockerfile: src/Acme.BookStore.HttpApi.Host/Dockerfile
+

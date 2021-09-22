@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  db-migrator:
+    image: ${DOCKER_REGISTRY-}bookstore.dbmigrator
+    container_name: bookstore.dbmigrator_container
+    build:
+      context: ../.
+      dockerfile: ../src/Acme.BookStore.DbMigrator/Dockerfile
+    environment:
+      - ConnectionStrings__Default=Host=postgres;Database=BookStore;User ID=root;Password=myPassword;
+    depends_on:
+      - "postgres"
+      
+  auth-server:
+    image: ${DOCKER_REGISTRY-}bookstore.authserver
+    container_name: bookstore.authserver_container
+    build:
+      context: ../.
+      dockerfile: src/Acme.BookStore.IdentityServer/Dockerfile
+    environment:
+      - ConnectionStrings__Default=Host=postgres;Database=BookStore;User ID=root;Password=myPassword;
+      - Redis__Configuration=redis
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_HTTPS_PORT=44372
+      - Kestrel__Certificates__Default__Password=64fd4a14-311a-47bb-80b1-ac9665b0e0c7
+      - Kestrel__Certificates__Default__Path=/root/certificate/bookstore-devcert.pfx
+      - App__SelfUrl=https://localhost:44372
+      - App__ClientUrl=http://localhost:4200
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+      - ./certificate/dev-cert:/root/certificate
+    ports:
+      - "44372:443"
+    depends_on:
+      - "redis"
+      - "postgres"
+    networks:
+      - bookstore-network
+  
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - bookstore-network
+      
+  postgres:
+    container_name: postgres_container
+    image: postgres    
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/data/postgres
+    networks:
+      - bookstore-network
+    restart: always    
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123qwe
+      
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4    
+    ports:
+      - "8080:80"
+    volumes:
+       - pgadmin:/root/.pgadmin    
+    networks:
+      - bookstore-network
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: 123qwe
+
+networks:
+  bookstore-network:
+
+volumes:
+    postgres:
+    pgadmin:
